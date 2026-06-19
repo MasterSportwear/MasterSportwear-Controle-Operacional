@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Master Sportwear — Controle Operacional</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2436;
+    --border: #252d42;
+    --accent: #e8501a;
+    --accent2: #f57c4a;
+    --green: #2ecc71;
+    --yellow: #f0c040;
+    --red: #e74c3c;
+    --blue: #3b82f6;
+    --text: #e8eaf0;
+    --muted: #6b7694;
+    --label: #9aa3c2;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-mark {
+    width: 32px; height: 32px; background: var(--accent); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: #fff;
+  }
+  .logo-text { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .date-badge {
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 10px;
+  }
+  .turno-badge {
+    font-size: 11px; font-weight: 600; background: var(--accent);
+    color: #fff; border-radius: 20px; padding: 4px 12px; letter-spacing: 0.5px;
+  }
+
+  /* FILTER BAR */
+  .filter-bar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 10px 32px; display: flex; align-items: center; gap: 12px;
+    flex-wrap: wrap; position: sticky; top: 60px; z-index: 90;
+  }
+  .filter-bar-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.8px; text-transform: uppercase; white-space: nowrap; }
+  .filter-bar input[type="date"], .filter-bar select {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 12px;
+    color: var(--text); font-family: var(--sans); outline: none; cursor: pointer; transition: border-color 0.15s;
+  }
+  .filter-bar input[type="date"]:focus, .filter-bar select:focus { border-color: var(--accent); }
+  .filter-bar select option { background: var(--surface2); }
+  .filter-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+  .btn-filter { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; font-family: var(--sans); transition: all 0.15s; }
+  .btn-apply { background: var(--accent); color: #fff; }
+  .btn-apply:hover { background: #d4471a; }
+  .btn-clear-filter { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-clear-filter:hover { background: var(--surface2); color: var(--text); }
+  .filter-active-badge {
+    font-size: 10px; font-weight: 700;
+    background: rgba(232,80,26,0.2); color: var(--accent2);
+    border: 1px solid rgba(232,80,26,0.3);
+    padding: 3px 10px; border-radius: 20px; letter-spacing: 0.3px; display: none;
+  }
+  .filter-active-badge.visible { display: inline-block; }
+  .filter-result-info { font-size: 11px; color: var(--muted); margin-left: auto; font-family: var(--mono); }
+  tr.filtered-out { display: none; }
+
+  /* LAYOUT */
+  .layout { display: flex; min-height: calc(100vh - 100px); }
+
+  /* NAV */
+  nav { width: 220px; background: var(--surface); border-right: 1px solid var(--border); padding: 24px 0; flex-shrink: 0; }
+  .nav-section { padding: 0 16px; margin-bottom: 24px; }
+  .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 1.2px; color: var(--muted); text-transform: uppercase; padding: 0 8px; margin-bottom: 8px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+    border-radius: 8px; cursor: pointer; font-size: 13.5px; color: var(--label);
+    transition: all 0.15s; margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(232,80,26,0.15); color: var(--accent2); font-weight: 500; }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* MAIN */
+  main { flex: 1; overflow-y: auto; padding: 28px 32px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* PAGE TITLE */
+  .page-title { margin-bottom: 24px; }
+  .page-title h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .page-title p { font-size: 13px; color: var(--muted); }
+
+  /* KPI GRID */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; position: relative; overflow: hidden;
+  }
+  .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .kpi-card.accent::before { background: var(--accent); }
+  .kpi-card.green::before  { background: var(--green); }
+  .kpi-card.yellow::before { background: var(--yellow); }
+  .kpi-card.blue::before   { background: var(--blue); }
+  .kpi-label { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; margin-bottom: 10px; }
+  .kpi-value { font-family: var(--mono); font-size: 28px; font-weight: 500; letter-spacing: -1px; line-height: 1; margin-bottom: 6px; }
+  .kpi-sub { font-size: 11px; color: var(--muted); }
+  .kpi-delta { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 20px; display: inline-block; margin-top: 4px; }
+  .kpi-delta.up   { background: rgba(46,204,113,0.15); color: var(--green); }
+  .kpi-delta.warn { background: rgba(240,192,64,0.15); color: var(--yellow); }
+  .kpi-delta.down { background: rgba(231,76,60,0.15); color: var(--red); }
+
+  /* FORM PANEL */
+  .form-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .form-panel h3 { font-size: 14px; font-weight: 600; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .form-panel h3 .tag { font-size: 10px; background: rgba(232,80,26,0.15); color: var(--accent2); padding: 2px 8px; border-radius: 20px; font-weight: 600; letter-spacing: 0.5px; }
+  .form-grid   { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+  .form-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .form-grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .form-grid-5 { grid-template-columns: repeat(5, 1fr); }
+  .field label { display: block; font-size: 11px; font-weight: 600; color: var(--label); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .field input, .field select, .field textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 12px; font-size: 13px;
+    color: var(--text); font-family: var(--sans); outline: none; transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .field select option { background: var(--surface2); }
+  .field input[readonly] { color: var(--muted); cursor: default; }
+
+  /* CUSTO PREVIEW */
+  .custo-preview {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 20px; margin-bottom: 16px;
+    display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
+  }
+  .custo-preview .cp-item { display: flex; flex-direction: column; gap: 4px; }
+  .custo-preview .cp-label { font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+  .custo-preview .cp-val { font-family: var(--mono); font-size: 15px; font-weight: 500; }
+  .custo-preview .cp-val.total { color: var(--accent2); font-size: 18px; }
+
+  .btn { padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; font-family: var(--sans); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #d4471a; }
+  .btn-ghost { background: transparent; color: var(--label); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+  .form-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+  /* TABLE */
+  .table-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+  .table-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .table-header h3 { font-size: 14px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; background: var(--surface2); border-bottom: 1px solid var(--border); }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--border); color: var(--label); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  td.mono { font-family: var(--mono); font-size: 12px; }
+  td.bold { color: var(--text); font-weight: 500; }
+  .badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; letter-spacing: 0.3px; white-space: nowrap; }
+  .badge-green  { background: rgba(46,204,113,0.15); color: var(--green); }
+  .badge-yellow { background: rgba(240,192,64,0.15); color: var(--yellow); }
+  .badge-red    { background: rgba(231,76,60,0.15); color: var(--red); }
+  .badge-blue   { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .badge-gray   { background: rgba(107,118,148,0.15); color: var(--muted); }
+
+  /* CHARTS */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .chart-card h3 { font-size: 13px; font-weight: 600; color: var(--label); margin-bottom: 16px; }
+  .bar-chart { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 12px; }
+  .bar-label { font-size: 11px; color: var(--muted); width: 90px; text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; background: var(--surface2); border-radius: 4px; height: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+  .bar-val { font-family: var(--mono); font-size: 11px; color: var(--text); width: 60px; text-align: right; }
+
+  /* ALERT */
+  .alert-strip {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(240,192,64,0.08); border: 1px solid rgba(240,192,64,0.3);
+    border-radius: 10px; padding: 12px 16px; margin-bottom: 20px;
+    font-size: 13px; color: var(--yellow);
+  }
+  .alert-strip.red { background: rgba(231,76,60,0.08); border-color: rgba(231,76,60,0.3); color: var(--red); }
+
+  /* DESPERDÍCIO CARDS */
+  .desp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+  .desp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .desp-card h4 { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+  .desp-item { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .desp-item:last-child { border-bottom: none; }
+  .desp-item .name { color: var(--label); }
+  .desp-item .val { font-family: var(--mono); font-size: 13px; font-weight: 500; }
+
+  /* INFO BOX */
+  .info-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;
+    font-size: 12px; color: var(--label); line-height: 1.6;
+  }
+  .info-box strong { color: var(--text); }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--green); color: #fff;
+    padding: 12px 20px; border-radius: 10px;
+    font-size: 13px; font-weight: 600; z-index: 9999;
+    transform: translateY(80px); opacity: 0; transition: all 0.3s ease;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* DELETE BUTTON */
+  .btn-del {
+    background: transparent;
+    border: 1px solid rgba(231,76,60,0.3);
+    color: var(--red);
+    border-radius: 6px;
+    width: 26px; height: 26px;
+    font-size: 11px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; padding: 0;
+  }
+  .btn-del:hover { background: rgba(231,76,60,0.15); border-color: var(--red); }
+  tr.deleting { opacity: 0.3; transition: opacity 0.3s; }
+
+  @media (max-width: 900px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .charts-row { grid-template-columns: 1fr; }
+    nav { width: 60px; }
+    .nav-item span:not(.nav-icon) { display: none; }
+    .nav-label { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">MS</div>
+    <div>
+      <div class="logo-text">Master Sportwear</div>
+      <div class="logo-sub">CONTROLE OPERACIONAL</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="date-badge" id="dateBadge"></div>
+    <div class="turno-badge" id="turnoBadge">TURNO 1</div>
+  </div>
+</header>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <span class="filter-bar-label">🔍 Filtrar</span>
+  <div style="display:flex;align-items:center;gap:6px">
+    <span style="font-size:11px;color:var(--muted)">De</span>
+    <input type="date" id="filter-date-from">
+  </div>
+  <div style="display:flex;align-items:center;gap:6px">
+    <span style="font-size:11px;color:var(--muted)">Até</span>
+    <input type="date" id="filter-date-to">
+  </div>
+  <div class="filter-sep"></div>
+  <select id="filter-turno">
+    <option value="">Todos os turnos</option>
+    <option value="T1">Turno 1 – Manhã</option>
+    <option value="T2">Turno 2 – Tarde</option>
+    <option value="T3">Turno 3 – Noite</option>
+  </select>
+  <select id="filter-setor">
+    <option value="">Todos os setores</option>
+    <option value="Impressão">Impressão (Plotter)</option>
+    <option value="Corte">Corte</option>
+    <option value="Prensa">Prensa (Calandra)</option>
+    <option value="Costura">Costura</option>
+    <option value="Arremate">Arremate</option>
+  </select>
+  <button class="btn-filter btn-apply" onclick="applyFilters()">Aplicar</button>
+  <button class="btn-filter btn-clear-filter" onclick="clearFilters()">Limpar</button>
+  <span class="filter-active-badge" id="filterActiveBadge">FILTRO ATIVO</span>
+  <span class="filter-result-info" id="filterResultInfo"></span>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label">Produção</div>
+      <div class="nav-item active" onclick="showSection('producao',this)"><span class="nav-icon">⚙️</span><span>Volume Produzido</span></div>
+      <div class="nav-item" onclick="showSection('materia',this)"><span class="nav-icon">🧵</span><span>Matéria-Prima</span></div>
+      <div class="nav-item" onclick="showSection('desperdicio',this)"><span class="nav-icon">⚠️</span><span>Desperdícios</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Relatórios</div>
+      <div class="nav-item" onclick="showSection('historico',this)"><span class="nav-icon">📋</span><span>Histórico Geral</span></div>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- ================================ -->
+    <!-- SEÇÃO 1: VOLUME DE PRODUÇÃO      -->
+    <!-- ================================ -->
+    <div class="section active" id="section-producao">
+      <div class="page-title">
+        <h1>Volume de Produção</h1>
+        <p>Registre a produção por setor, colaborador e linha de produto.</p>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr)">
+        <div class="kpi-card accent">
+          <div class="kpi-label">Impressão</div>
+          <div class="kpi-value" id="kpi-setor-impressao">0</div>
+          <div class="kpi-sub">peças produzidas</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Corte</div>
+          <div class="kpi-value" id="kpi-setor-corte">0</div>
+          <div class="kpi-sub">peças produzidas</div>
+        </div>
+        <div class="kpi-card yellow">
+          <div class="kpi-label">Prensa (Calandra)</div>
+          <div class="kpi-value" id="kpi-setor-prensa">0</div>
+          <div class="kpi-sub">peças produzidas</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Costura</div>
+          <div class="kpi-value" id="kpi-setor-costura">0</div>
+          <div class="kpi-sub">peças produzidas</div>
+        </div>
+        <div class="kpi-card" style="border-top:3px solid var(--muted)">
+          <div class="kpi-label">Arremate</div>
+          <div class="kpi-value" id="kpi-setor-arremate">0</div>
+          <div class="kpi-sub">peças produzidas</div>
+        </div>
+      </div>
+
+      <div class="form-panel">
+        <h3>Registrar Produção <span class="tag">LANÇAMENTO</span></h3>
+        <div class="form-grid form-grid-5">
+          <div class="field">
+            <label>Data</label>
+            <input type="date" id="prod-data">
+          </div>
+          <div class="field">
+            <label>Turno</label>
+            <select id="prod-turno">
+              <option value="T1">Turno 1 – Manhã</option>
+              <option value="T2">Turno 2 – Tarde</option>
+              <option value="T3">Turno 3 – Noite</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Setor</label>
+            <select id="prod-setor">
+              <option value="Impressão">Impressão (Plotter)</option>
+              <option value="Corte">Corte</option>
+              <option value="Prensa">Prensa (Calandra)</option>
+              <option value="Costura">Costura</option>
+              <option value="Arremate">Arremate</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Colaborador</label>
+            <select id="prod-colab">
+              <option value="">— selecione —</option>
+              <option>Guilherme</option>
+              <option>Marcelo</option>
+              <option>Renan</option>
+              <option>Erick</option>
+              <option>Daniele</option>
+              <option>Josélia</option>
+              <option>Rosilene</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tipo de Peça</label>
+            <select id="prod-tipo-peca" onchange="atualizarLinhas()">
+              <option value="camisa">Camisa</option>
+              <option value="short">Short</option>
+              <option value="regata">Regata</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid form-grid-4">
+          <div class="field">
+            <label>Linha</label>
+            <select id="prod-linha" onchange="calcularCustoProducao()">
+              <option value="basica">Básica (Helanca)</option>
+              <option value="pro">Pro (Dryfit Liso)</option>
+              <option value="plus">Plus (Sportage)</option>
+              <option value="master">Master (Stone 3D)</option>
+              <option value="ultra">Ultra (Jacquard Barcelona)</option>
+            </select>
+          </div>
+          <div class="field" id="prod-papel-field">
+            <label>Papel Sublimático</label>
+            <select id="prod-papel">
+              <option value="1.60">64g — R$1,60/m</option>
+              <option value="2.00">74g — R$2,00/m</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Qtd. Produzidas</label>
+            <input type="number" id="prod-qtd" placeholder="0" min="0" oninput="calcularCustoProducao()">
+          </div>
+          <div class="field">
+            <label>Qtd. com Defeito</label>
+            <input type="number" id="prod-defeito" placeholder="0" min="0">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="limparProd()">Limpar</button>
+          <button class="btn btn-primary" onclick="registrarProducao()">Salvar Registro</button>
+        </div>
+      </div>
+
+      <!-- TABELA -->
+      <div class="table-panel">
+        <div class="table-header"><h3>Registros de Produção</h3></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Data · Turno</th>
+              <th>Setor</th>
+              <th>Colaborador</th>
+              <th>Linha</th>
+              <th>Tipo</th>
+              <th>Produzidas</th>
+              <th>Defeitos</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-producao"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ================================ -->
+    <!-- SEÇÃO 2: MATÉRIA-PRIMA           -->
+    <!-- ================================ -->
+    <div class="section" id="section-materia">
+      <div class="page-title">
+        <h1>Matéria-Prima Utilizada</h1>
+        <p>Registre o consumo de tecido, papel sublimático, tinta e papel de calandra por produção.</p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card accent">
+          <div class="kpi-label">Custo Total MP — Hoje</div>
+          <div class="kpi-value" id="kpi-custo-mp">R$ 0</div>
+          <div class="kpi-sub">estimado pelos registros</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Custo de Tecido</div>
+          <div class="kpi-value" id="kpi-custo-tecido">R$ 0</div>
+          <div class="kpi-sub">por linha e tipo de peça</div>
+        </div>
+        <div class="kpi-card yellow">
+          <div class="kpi-label">Custo Sublimação</div>
+          <div class="kpi-value" id="kpi-custo-subli">R$ 0</div>
+          <div class="kpi-sub">papel + tinta</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Custo Calandra</div>
+          <div class="kpi-value" id="kpi-custo-cal">R$ 0</div>
+          <div class="kpi-sub">papel de calandra</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>Tabela de Referência de Custos</strong><br>
+        <strong>Tecidos:</strong> Helanca R$23,99/kg · Dryfit Liso R$27,99/kg · Sportage R$27,99/kg · Stone 3D R$42,50/kg · Jacquard Barcelona R$64,90/kg · Colméia R$27,99/kg &nbsp;|&nbsp;
+        <strong>Papel Sublimático:</strong> 64g = R$1,60/m · 74g = R$2,00/m &nbsp;|&nbsp;
+        <strong>Tinta:</strong> R$2,50/peça &nbsp;|&nbsp;
+        <strong>Papel Calandra:</strong> R$0,80/m &nbsp;|&nbsp;
+        Consumo por peça: Camisa = 1,00m subli + 1,00m calandra · Short = 0,80m subli + 0,80m calandra · Regata = 1,15m subli + 1,15m calandra
+      </div>
+
+      <div class="form-panel">
+        <h3>Registrar Consumo de Materiais <span class="tag">LANÇAMENTO</span></h3>
+        <div class="form-grid form-grid-4">
+          <div class="field">
+            <label>Data</label>
+            <input type="date" id="mp-data">
+          </div>
+          <div class="field">
+            <label>Turno</label>
+            <select id="mp-turno">
+              <option value="T1">Turno 1 – Manhã</option>
+              <option value="T2">Turno 2 – Tarde</option>
+              <option value="T3">Turno 3 – Noite</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tipo de Peça</label>
+            <select id="mp-tipo-peca" onchange="atualizarLinhasMP(); calcularCustoMP()">
+              <option value="camisa">Camisa</option>
+              <option value="short">Short</option>
+              <option value="regata">Regata</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Linha</label>
+            <select id="mp-linha" onchange="calcularCustoMP()">
+              <option value="basica">Básica (Helanca)</option>
+              <option value="pro">Pro (Dryfit Liso)</option>
+              <option value="plus">Plus (Sportage)</option>
+              <option value="master">Master (Stone 3D)</option>
+              <option value="ultra">Ultra (Jacquard Barcelona)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid form-grid-4">
+          <div class="field">
+            <label>Qtd. de Peças</label>
+            <input type="number" id="mp-qtd" placeholder="0" min="1" oninput="calcularCustoMP()">
+          </div>
+          <div class="field">
+            <label>Papel Sublimático</label>
+            <select id="mp-papel" onchange="calcularCustoMP()">
+              <option value="1.60">64g — R$1,60/m</option>
+              <option value="2.00">74g — R$2,00/m</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Kg de Tecido Usado</label>
+            <input type="number" id="mp-kg" step="0.1" placeholder="0,0" oninput="calcularCustoMP()">
+          </div>
+          <div class="field">
+            <label>Nº OS / Pedido</label>
+            <input type="text" id="mp-os" placeholder="Ex: OS-2026-0001">
+          </div>
+        </div>
+
+        <!-- PREVIEW DE CUSTO -->
+        <div class="custo-preview" id="mp-preview">
+          <div class="cp-item"><div class="cp-label">Tecido</div><div class="cp-val" id="prev-tecido">R$ 0,00</div></div>
+          <div class="cp-item"><div class="cp-label">Papel Sublimático</div><div class="cp-val" id="prev-papel">R$ 0,00</div></div>
+          <div class="cp-item"><div class="cp-label">Tinta</div><div class="cp-val" id="prev-tinta">R$ 0,00</div></div>
+          <div class="cp-item"><div class="cp-label">Papel Calandra</div><div class="cp-val" id="prev-calandra">R$ 0,00</div></div>
+          <div class="cp-item" style="margin-left:auto">
+            <div class="cp-label">CUSTO TOTAL</div>
+            <div class="cp-val total" id="prev-total">R$ 0,00</div>
+          </div>
+          <div class="cp-item">
+            <div class="cp-label">CUSTO / PEÇA</div>
+            <div class="cp-val total" id="prev-por-peca">R$ 0,00</div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="limparMP()">Limpar</button>
+          <button class="btn btn-primary" onclick="registrarMP()">Salvar Registro</button>
+        </div>
+      </div>
+
+      <div class="table-panel">
+        <div class="table-header"><h3>Registros de Consumo de MP</h3></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Data · Turno</th>
+              <th>Linha / Tipo</th>
+              <th>OS</th>
+              <th>Qtd.</th>
+              <th>Custo Tecido</th>
+              <th>Custo Subli.</th>
+              <th>Custo Calandra</th>
+              <th>Total MP</th>
+              <th>R$/Peça</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-materia"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ================================ -->
+    <!-- SEÇÃO 3: DESPERDÍCIOS / PARES    -->
+    <!-- ================================ -->
+    <div class="section" id="section-desperdicio">
+      <div class="page-title">
+        <h1>Controle de Desperdícios</h1>
+        <p>Integrado ao Sistema de Pares de Reposição. O custo é calculado automaticamente pelo setor de origem do defeito.</p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card accent">
+          <div class="kpi-label">Total Ocorrências — Hoje</div>
+          <div class="kpi-value" id="kpi-ocorr">0</div>
+          <div class="kpi-sub">peças com defeito registradas</div>
+        </div>
+        <div class="kpi-card yellow">
+          <div class="kpi-label">Custo Desperdício — Hoje</div>
+          <div class="kpi-value" id="kpi-custo-desp">R$ 0</div>
+          <div class="kpi-sub">materiais perdidos</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Setor Crítico</div>
+          <div class="kpi-value" id="kpi-setor-critico" style="font-size:16px">—</div>
+          <div class="kpi-sub">maior número de ocorrências</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Pares Emitidos — Hoje</div>
+          <div class="kpi-value" id="kpi-pares">0</div>
+          <div class="kpi-sub">formulários de reposição</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>Lógica de Custo por Setor:</strong><br>
+        <strong>Impressão:</strong> defeito gera custo de tinta + papel sublimático (sem tecido).<br>
+        <strong>Corte:</strong> defeito gera custo de tecido apenas.<br>
+        <strong>Prensa (Calandra):</strong> defeito exige reimprimir + recortar + prensar → custo de tinta + papel sublimático + papel calandra + tecido.<br>
+        <strong>Costura / Arremate:</strong> defeito gera custo de tecido + sublimação + calandra (peça já processada).
+      </div>
+
+      <div class="form-panel">
+        <h3>Registrar Ocorrência de Defeito / Par <span class="tag">LANÇAMENTO</span></h3>
+        <div class="form-grid form-grid-5">
+          <div class="field">
+            <label>Data</label>
+            <input type="date" id="desp-data">
+          </div>
+          <div class="field">
+            <label>Turno</label>
+            <select id="desp-turno">
+              <option value="T1">Turno 1 – Manhã</option>
+              <option value="T2">Turno 2 – Tarde</option>
+              <option value="T3">Turno 3 – Noite</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Setor de Origem</label>
+            <select id="desp-setor" onchange="calcularCustoDesp()">
+              <option value="Impressão">Impressão (Plotter)</option>
+              <option value="Corte">Corte</option>
+              <option value="Prensa">Prensa (Calandra)</option>
+              <option value="Costura">Costura</option>
+              <option value="Arremate">Arremate</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Colaborador</label>
+            <select id="desp-colab">
+              <option value="">— selecione —</option>
+              <option>Guilherme</option>
+              <option>Marcelo</option>
+              <option>Renan</option>
+              <option>Erick</option>
+              <option>Daniele</option>
+              <option>Josélia</option>
+              <option>Rosilene</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Peça Base</label>
+            <select id="desp-tipo-peca" onchange="atualizarComponentesDesp(); atualizarLinhasDesp(); calcularCustoDesp()">
+              <option value="camisa">Camisa</option>
+              <option value="short">Short</option>
+              <option value="regata">Regata</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid form-grid-4">
+          <div class="field">
+            <label>Componente com Defeito</label>
+            <select id="desp-componente" onchange="calcularCustoDesp()">
+              <option value="frente">Frente (45% do custo)</option>
+              <option value="costa">Costa (45% do custo)</option>
+              <option value="manga">Mangas — 2un (10% do custo)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Linha</label>
+            <select id="desp-linha" onchange="calcularCustoDesp()">
+              <option value="basica">Básica (Helanca)</option>
+              <option value="pro">Pro (Dryfit Liso)</option>
+              <option value="plus">Plus (Sportage)</option>
+              <option value="master">Master (Stone 3D)</option>
+              <option value="ultra">Ultra (Jacquard Barcelona)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tipo de Defeito</label>
+            <select id="desp-tipo-defeito">
+              <option>Impressão borrada / falha</option>
+              <option>Sublimação com cor errada</option>
+              <option>Corte fora de medida</option>
+              <option>Prensa com marca / bolha</option>
+              <option>Costura soltando</option>
+              <option>Costura torta</option>
+              <option>Acabamento irregular</option>
+              <option>Mancha / sujeira</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Qtd. de Componentes</label>
+            <input type="number" id="desp-qtd" placeholder="0" min="1" oninput="calcularCustoDesp()">
+          </div>
+        </div>
+        <div class="form-grid form-grid-2">
+          <div class="field">
+            <label>Papel Sublimático (se aplicável)</label>
+            <select id="desp-papel" onchange="calcularCustoDesp()">
+              <option value="1.60">64g — R$1,60/m</option>
+              <option value="2.00">74g — R$2,00/m</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Destino da Peça</label>
+            <select id="desp-destino">
+              <option>Retrabalho / Reposição</option>
+              <option>Descarte Total</option>
+              <option>Segunda Linha</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- PREVIEW CUSTO DESPERDÍCIO -->
+        <div class="custo-preview" id="desp-preview">
+          <div class="cp-item"><div class="cp-label">Componentes perdidos</div><div class="cp-val" id="desp-prev-desc" style="font-size:12px;color:var(--label)">—</div></div>
+          <div class="cp-item" style="margin-left:auto">
+            <div class="cp-label">CUSTO DO DESPERDÍCIO</div>
+            <div class="cp-val total" id="desp-prev-total">R$ 0,00</div>
+          </div>
+          <div class="cp-item">
+            <div class="cp-label">CUSTO / PEÇA</div>
+            <div class="cp-val total" id="desp-prev-por-peca">R$ 0,00</div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="limparDesp()">Limpar</button>
+          <button class="btn btn-primary" onclick="registrarDesp()">Registrar Ocorrência</button>
+        </div>
+      </div>
+
+      <div class="table-panel">
+        <div class="table-header"><h3>Ocorrências Registradas</h3></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Data · Turno</th>
+              <th>Setor</th>
+              <th>Colaborador</th>
+              <th>Linha / Tipo</th>
+              <th>Defeito</th>
+              <th>Qtd.</th>
+              <th>Componentes Perdidos</th>
+              <th>Custo Total</th>
+              <th>Destino</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-desperdicio"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ================================ -->
+    <!-- SEÇÃO 4: HISTÓRICO GERAL         -->
+    <!-- ================================ -->
+    <div class="section" id="section-historico">
+      <div class="page-title">
+        <h1>Histórico Geral</h1>
+        <p>Todos os registros consolidados. Use os filtros de data e turno acima para refinar a visualização.</p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card accent">
+          <div class="kpi-label">Total de Registros</div>
+          <div class="kpi-value" id="kpi-hist-total">0</div>
+          <div class="kpi-sub">lançamentos no sistema</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Peças Produzidas</div>
+          <div class="kpi-value" id="kpi-hist-prod">0</div>
+          <div class="kpi-sub">total acumulado</div>
+        </div>
+        <div class="kpi-card yellow">
+          <div class="kpi-label">Custo Total MP</div>
+          <div class="kpi-value" id="kpi-hist-mp">R$ 0</div>
+          <div class="kpi-sub">todos os registros</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Custo Total Desperdício</div>
+          <div class="kpi-value" id="kpi-hist-desp">R$ 0</div>
+          <div class="kpi-sub">todos os registros</div>
+        </div>
+      </div>
+
+      <div class="table-panel">
+        <div class="table-header"><h3>Histórico Completo</h3></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Data · Turno</th>
+              <th>Módulo</th>
+              <th>Setor</th>
+              <th>Colaborador</th>
+              <th>Linha / Tipo</th>
+              <th>Qtd.</th>
+              <th>Custo</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-historico"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ============================================================
+// DADOS MESTRE — CUSTOS REAIS DA MASTER SPORTWEAR
+// ============================================================
+const TECIDOS = {
+  // [preço_por_kg, peças_por_kg_camisa, peças_por_kg_short, peças_por_kg_regata]
+  basica:  { nome:'Helanca',             preco:23.99, rendCamisa:6, rendShort:6, rendRegata:6 },
+  pro:     { nome:'Dryfit Liso',         preco:27.99, rendCamisa:6, rendShort:6, rendRegata:6 },
+  plus:    { nome:'Sportage',            preco:27.99, rendCamisa:6, rendShort:null, rendRegata:null },
+  master:  { nome:'Stone 3D',            preco:42.50, rendCamisa:5, rendShort:null, rendRegata:null },
+  ultra:   { nome:'Jacquard Barcelona',  preco:64.90, rendCamisa:5, rendShort:null, rendRegata:null },
+  colmeia: { nome:'Colméia',             preco:27.99, rendCamisa:null, rendShort:6, rendRegata:null },
+  nba:     { nome:'NBA',                 preco:39.99, rendCamisa:null, rendShort:null, rendRegata:6 },
+};
+
+// Consumo de papel sublimático e calandra por tipo de peça (metros por peça)
+const CONSUMO_PAPEL = {
+  camisa:  { subli: 1.00, calandra: 1.00 },
+  short:   { subli: 0.80, calandra: 0.80 },
+  regata:  { subli: 1.15, calandra: 1.15 },
+};
+
+// Shorts das linhas Plus, Master e Ultra usam Colméia
+function getTecido(linha, tipo) {
+  if (tipo === 'short') {
+    if (['plus','master','ultra'].includes(linha)) return TECIDOS.colmeia;
+    return TECIDOS[linha];
+  }
+  if (tipo === 'regata') return TECIDOS[linha];
+  return TECIDOS[linha];
+}
+
+function getCustoPorPecaTecido(linha, tipo) {
+  const t = getTecido(linha, tipo);
+  if (!t) return 0;
+  const rend = tipo === 'camisa' ? t.rendCamisa
+             : tipo === 'short'  ? t.rendShort
+             : t.rendRegata;
+  if (!rend) return 0;
+  return t.preco / rend;
+}
+
+// Papel sublimático por peça usando tabela de consumo
+function getCustoPapelSubliPorPeca(precoM, tipo) {
+  const metros = (CONSUMO_PAPEL[tipo] || CONSUMO_PAPEL.camisa).subli;
+  return precoM * metros;
+}
+
+// Tinta: R$2,50 por peça (todos os tipos)
+const CUSTO_TINTA = 2.50;
+
+// Papel calandra por peça usando tabela de consumo
+function getCustoCaladraPorPeca(tipo) {
+  const metros = (CONSUMO_PAPEL[tipo] || CONSUMO_PAPEL.camisa).calandra;
+  return 0.80 * metros;
+}
+
+// Custo total MP por peça (produção normal)
+function getCustoMPPorPeca(linha, tipo, precoSubli) {
+  const tecido   = getCustoPorPecaTecido(linha, tipo);
+  const papel    = getCustoPapelSubliPorPeca(precoSubli, tipo);
+  const tinta    = CUSTO_TINTA;
+  const calandra = getCustoCaladraPorPeca(tipo);
+  return { tecido, papel, tinta, calandra, total: tecido + papel + tinta + calandra };
+}
+
+// Custo de desperdício por setor (o que precisou ser refeito)
+function getCustoDesperdicio(setor, linha, tipo, precoSubli) {
+  const tecido   = getCustoPorPecaTecido(linha, tipo);
+  const papel    = getCustoPapelSubliPorPeca(precoSubli, tipo);
+  const tinta    = CUSTO_TINTA;
+  const calandra = getCustoCaladraPorPeca(tipo);
+
+  switch(setor) {
+    case 'Impressão':
+      return { desc: 'Tinta + Papel Sublimático', valor: tinta + papel };
+    case 'Corte':
+      return { desc: 'Tecido', valor: tecido };
+    case 'Prensa':
+      return { desc: 'Tinta + Papel Sublimático + Papel Calandra + Tecido', valor: tinta + papel + calandra + tecido };
+    case 'Costura':
+    case 'Arremate':
+      return { desc: 'Tecido + Papel Sublimático + Tinta + Papel Calandra', valor: tecido + papel + tinta + calandra };
+    default:
+      return { desc: '—', valor: 0 };
+  }
+}
+
+// ============================================================
+// LINHAS DISPONÍVEIS POR TIPO DE PEÇA
+// ============================================================
+const LINHAS_CAMISA = [
+  { value:'basica', label:'Básica (Helanca)' },
+  { value:'pro',    label:'Pro (Dryfit Liso)' },
+  { value:'plus',   label:'Plus (Sportage)' },
+  { value:'master', label:'Master (Stone 3D)' },
+  { value:'ultra',  label:'Ultra (Jacquard Barcelona)' },
+];
+const LINHAS_SHORT = [
+  { value:'basica', label:'Básica (Helanca)' },
+  { value:'pro',    label:'Pro (Dryfit Liso)' },
+  { value:'plus',   label:'Plus (Colméia)' },
+  { value:'master', label:'Master (Colméia)' },
+  { value:'ultra',  label:'Ultra (Colméia)' },
+];
+
+const LINHAS_REGATA = [
+  { value:'basica', label:'Regata Helanca' },
+  { value:'pro',    label:'Regata Dryfit' },
+  { value:'nba',    label:'Regata NBA' },
+];
+
+function preencherLinhas(selectId, tipo) {
+  const sel = document.getElementById(selectId);
+  const val = sel.value;
+  const linhas = tipo === 'camisa' ? LINHAS_CAMISA
+               : tipo === 'short'  ? LINHAS_SHORT
+               : LINHAS_REGATA;
+  sel.innerHTML = linhas.map(l => `<option value="${l.value}">${l.label}</option>`).join('');
+  const exists = linhas.find(l => l.value === val);
+  if (exists) sel.value = val;
+}
+
+function atualizarLinhas()    { preencherLinhas('prod-linha',  document.getElementById('prod-tipo-peca').value); calcularCustoProducao(); }
+function atualizarLinhasMP()  { preencherLinhas('mp-linha',    document.getElementById('mp-tipo-peca').value); calcularCustoMP(); }
+function atualizarLinhasDesp(){ preencherLinhas('desp-linha',  document.getElementById('desp-tipo-peca').value); calcularCustoDesp(); }
+
+// ============================================================
+// CALCULADORES DE PREVIEW
+// ============================================================
+function fmt(v) {
+  const n = parseFloat(v);
+  return 'R$ ' + (isNaN(n) ? '0,00' : n.toFixed(2).replace('.',','));
+}
+
+function calcularCustoProducao() {
+  // Usado apenas para validação ao salvar, não exibe preview nesta aba
+}
+
+function calcularCustoMP() {
+  const tipo       = document.getElementById('mp-tipo-peca').value;
+  const linha      = document.getElementById('mp-linha').value;
+  const qtd        = parseFloat(document.getElementById('mp-qtd').value) || 0;
+  const precoSubli = parseFloat(document.getElementById('mp-papel').value) || 1.60;
+  const kgManual   = parseFloat(document.getElementById('mp-kg').value) || 0;
+
+  const c = getCustoMPPorPeca(linha, tipo, precoSubli);
+  const t = getTecido(linha, tipo);
+
+  const custoTecido = kgManual > 0 ? kgManual * t.preco : c.tecido * qtd;
+  const custoSubli  = c.papel    * qtd;
+  const custoTinta  = c.tinta    * qtd;
+  const custoCal    = c.calandra * qtd;
+  const total       = custoTecido + custoSubli + custoTinta + custoCal;
+
+  document.getElementById('prev-tecido').textContent   = fmt(custoTecido);
+  document.getElementById('prev-papel').textContent    = fmt(custoSubli);
+  document.getElementById('prev-tinta').textContent    = fmt(custoTinta);
+  document.getElementById('prev-calandra').textContent = fmt(custoCal);
+  document.getElementById('prev-total').textContent    = fmt(total);
+  document.getElementById('prev-por-peca').textContent = fmt(qtd > 0 ? total / qtd : 0);
+}
+
+// Percentual do componente sobre o custo da peça completa
+function getPercentualComponente(tipoPeca, componente) {
+  if (tipoPeca === 'camisa') {
+    if (componente === 'frente') return 0.45;
+    if (componente === 'costa')  return 0.45;
+    if (componente === 'manga1') return 0.05;
+    if (componente === 'manga2') return 0.10;
+  }
+  if (tipoPeca === 'regata') {
+    // frente ou costa — ambos 50%
+    return 0.50;
+  }
+  if (tipoPeca === 'short') {
+    // lado_direito ou lado_esquerdo — ambos 50%
+    return 0.50;
+  }
+  return 1.0;
+}
+
+function getNomeComponente(tipoPeca, componente) {
+  if (tipoPeca === 'camisa') {
+    if (componente === 'frente') return 'Frente';
+    if (componente === 'costa')  return 'Costa';
+    if (componente === 'manga1') return 'Manga (1un)';
+    if (componente === 'manga2') return 'Mangas (2un)';
+  }
+  if (tipoPeca === 'regata') {
+    if (componente === 'frente') return 'Frente';
+    if (componente === 'costa')  return 'Costa';
+  }
+  if (tipoPeca === 'short') {
+    if (componente === 'lado_dir') return 'Lado Direito';
+    if (componente === 'lado_esq') return 'Lado Esquerdo';
+  }
+  return componente;
+}
+
+function atualizarComponentesDesp() {
+  const tipo = document.getElementById('desp-tipo-peca').value;
+  const sel  = document.getElementById('desp-componente');
+  if (tipo === 'camisa') {
+    sel.innerHTML = `
+      <option value="frente">Frente (45% do custo)</option>
+      <option value="costa">Costa (45% do custo)</option>
+      <option value="manga1">Manga — 1un (5% do custo)</option>
+      <option value="manga2">Mangas — 2un (10% do custo)</option>`;
+  } else if (tipo === 'regata') {
+    sel.innerHTML = `
+      <option value="frente">Frente (50% do custo)</option>
+      <option value="costa">Costa (50% do custo)</option>`;
+  } else {
+    sel.innerHTML = `
+      <option value="lado_dir">Lado Direito (50% do custo)</option>
+      <option value="lado_esq">Lado Esquerdo (50% do custo)</option>`;
+  }
+}
+
+function calcularCustoDesp() {
+  const setor      = document.getElementById('desp-setor').value;
+  const tipo       = document.getElementById('desp-tipo-peca').value;
+  const componente = document.getElementById('desp-componente').value;
+  const linha      = document.getElementById('desp-linha').value;
+  const qtd        = parseFloat(document.getElementById('desp-qtd').value) || 0;
+  const precoSubli = parseFloat(document.getElementById('desp-papel').value) || 1.60;
+
+  // Custo da peça completa pelo setor
+  const d = getCustoDesperdicio(setor, linha, tipo, precoSubli);
+
+  // Aplica percentual do componente
+  const pct          = getPercentualComponente(tipo, componente);
+  const custoComp    = d.valor * pct;
+  const total        = custoComp * qtd;
+  const nomeComp     = getNomeComponente(tipo, componente);
+  const pctLabel     = (pct * 100).toFixed(0);
+
+  document.getElementById('desp-prev-desc').textContent    = `${d.desc} · ${nomeComp} (${pctLabel}% da peça)`;
+  document.getElementById('desp-prev-total').textContent   = fmt(total);
+  document.getElementById('desp-prev-por-peca').textContent = fmt(custoComp);
+}
+
+// ============================================================
+// ESTADO GLOBAL
+// ============================================================
+let totais = { prod:0, camisas:0, shorts:0, defeitosHoje:0, custoMP:0, custoDesp:0, pares:0, ocorrPorSetor:{}, porSetor:{ Impressão:0, Corte:0, Prensa:0, Costura:0, Arremate:0 } };
+
+// ============================================================
+// REGISTROS
+// ============================================================
+// ============================================================
+// SUPABASE — CONFIG
+// ============================================================
+const SB_URL = 'https://uwtsxabuhvyrlpjjxqws.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3dHN4YWJ1aHZ5cmxwamp4cXdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NjQxMDYsImV4cCI6MjA5NzM0MDEwNn0.ZGOsA3EBaXHJb5M2yiGc7zAs3jYl7DXF2CS6oJkxYMg';
+
+async function sbInsert(table, row) {
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': `Bearer ${SB_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(row)
+    });
+    if (!res.ok) { console.error('SB insert error', await res.text()); return false; }
+    return true;
+  } catch(e) { console.error('SB error', e); return false; }
+}
+
+async function sbSelect(table, params='') {
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/${table}?${params}&order=created_at.desc&limit=500`, {
+      headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+    });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch(e) { return []; }
+}
+
+function mostrarLoader(show) {
+  let el = document.getElementById('global-loader');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'global-loader';
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;height:3px;background:var(--accent);z-index:9999;transition:opacity 0.4s;';
+    document.body.appendChild(el);
+  }
+  el.style.opacity = show ? '1' : '0';
+}
+
+// ============================================================
+// CARREGAR DADOS DO SUPABASE AO ABRIR
+// ============================================================
+async function carregarDados() {
+  mostrarLoader(true);
+  const [prods, mps, desps] = await Promise.all([
+    sbSelect('producao'),
+    sbSelect('materia_prima'),
+    sbSelect('desperdicio'),
+  ]);
+
+  totais = { prod:0, camisas:0, shorts:0, defeitosHoje:0, custoMP:0, custoDesp:0, pares:0, ocorrPorSetor:{} };
+
+  const tbodyProd = document.getElementById('tbody-producao');
+  const tbodyMP   = document.getElementById('tbody-materia');
+  const tbodyDesp = document.getElementById('tbody-desperdicio');
+  const tbodyHist = document.getElementById('tbody-historico');
+  tbodyProd.innerHTML = tbodyMP.innerHTML = tbodyDesp.innerHTML = tbodyHist.innerHTML = '';
+
+  prods.forEach(r => {
+    totais.prod += r.qtd;
+    if (r.tipo_peca === 'camisa') totais.camisas += r.qtd;
+    else if (r.tipo_peca === 'short') totais.shorts += r.qtd;
+    totais.defeitosHoje += r.defeitos;
+    const taxa = r.qtd > 0 ? r.defeitos/r.qtd : 0;
+    const statusBadge = taxa === 0 ? '<span class="badge badge-green">OK</span>'
+      : taxa < 0.05 ? '<span class="badge badge-yellow">Atenção</span>'
+      : '<span class="badge badge-red">Crítico</span>';
+    const tr = document.createElement('tr');
+    tr.dataset.date = r.data; tr.dataset.turno = r.turno; tr.dataset.setor = r.setor; tr.dataset.sbid = r.id;
+    if (!totais.porSetor) totais.porSetor = { Impressão:0, Corte:0, Prensa:0, Costura:0, Arremate:0 };
+    totais.porSetor[r.setor] = (totais.porSetor[r.setor]||0) + r.qtd;
+    tr.innerHTML = `
+      <td class="mono">${fmtDataLabel(r.data, r.turno)}</td>
+      <td class="bold">${r.setor}</td><td>${r.colaborador}</td>
+      <td>${r.linha_nome}</td>
+      <td>${r.tipo_peca === 'camisa' ? 'Camisa' : r.tipo_peca === 'short' ? 'Short' : 'Regata'}</td>
+      <td class="mono bold">${r.qtd}</td><td class="mono">${r.defeitos}</td>
+      <td>${statusBadge}</td>
+      <td><button class="btn-del" onclick="excluirRegistro(this,'producao')" title="Excluir">✕</button></td>`;
+    tbodyProd.appendChild(tr);
+    _addHist(tbodyHist, r.data, r.turno, r.setor, r.colaborador,
+      `${r.qtd} peças — ${r.linha_nome} (${r.tipo_peca})`, '—',
+      '<span class="badge badge-blue">Produção</span>', r.status || 'OK');
+  });
+
+  mps.forEach(r => {
+    totais.custoMP += parseFloat(r.custo_total)||0;
+    const tr = document.createElement('tr');
+    tr.dataset.date = r.data; tr.dataset.turno = r.turno; tr.dataset.sbid = r.id;
+    tr.innerHTML = `
+      <td class="mono">${fmtDataLabel(r.data, r.turno)}</td>
+      <td>${r.linha_nome} / ${r.tipo_peca === 'camisa' ? 'Camisa' : r.tipo_peca === 'short' ? 'Short' : 'Regata'}</td>
+      <td class="mono">${r.os||'—'}</td><td class="mono">${r.qtd}</td>
+      <td class="mono">${fmt(parseFloat(r.custo_tecido)||0)}</td>
+      <td class="mono">${fmt((parseFloat(r.custo_subli)||0)+(parseFloat(r.custo_tinta)||0))}</td>
+      <td class="mono">${fmt(parseFloat(r.custo_calandra)||0)}</td>
+      <td class="mono bold" style="color:var(--accent2)">${fmt(parseFloat(r.custo_total)||0)}</td>
+      <td class="mono">${fmt(parseFloat(r.custo_por_peca)||0)}</td>
+      <td><button class="btn-del" onclick="excluirRegistro(this,'materia_prima')" title="Excluir">✕</button></td>`;
+    tbodyMP.appendChild(tr);
+    _addHist(tbodyHist, r.data, r.turno, '—', '—',
+      `${r.qtd}× ${r.linha_nome} (${r.tipo_peca})`, fmt(parseFloat(r.custo_total)||0),
+      '<span class="badge badge-blue">MP</span>', 'MP');
+  });
+
+  desps.forEach(r => {
+    totais.custoDesp += parseFloat(r.custo_total)||0;
+    totais.pares     += r.qtd;
+    totais.ocorrPorSetor[r.setor] = (totais.ocorrPorSetor[r.setor]||0) + r.qtd;
+    const destinoBadge = r.destino === 'Retrabalho / Reposição'
+      ? '<span class="badge badge-yellow">Retrabalho</span>'
+      : r.destino === 'Descarte Total'
+        ? '<span class="badge badge-red">Descarte</span>'
+        : '<span class="badge badge-gray">2ª Linha</span>';
+    const tr = document.createElement('tr');
+    tr.dataset.date = r.data; tr.dataset.turno = r.turno; tr.dataset.setor = r.setor; tr.dataset.sbid = r.id;
+    tr.innerHTML = `
+      <td class="mono">${fmtDataLabel(r.data, r.turno)}</td>
+      <td class="bold">${r.setor}</td><td>${r.colaborador}</td>
+      <td>${r.linha_nome} / ${r.tipo_peca === 'camisa' ? 'Camisa' : r.tipo_peca === 'short' ? 'Short' : 'Regata'} · ${r.componente_nome}</td>
+      <td style="font-size:12px">${r.tipo_defeito}</td>
+      <td class="mono">${r.qtd}</td>
+      <td style="font-size:11px;color:var(--muted)">${r.componentes_perdidos}</td>
+      <td class="mono bold" style="color:var(--red)">${fmt(parseFloat(r.custo_total)||0)}</td>
+      <td>${destinoBadge}</td>
+      <td><button class="btn-del" onclick="excluirRegistro(this,'desperdicio')" title="Excluir">✕</button></td>`;
+    tbodyDesp.appendChild(tr);
+    _addHist(tbodyHist, r.data, r.turno, r.setor, r.colaborador,
+      `${r.qtd}× ${r.linha_nome} — ${r.tipo_defeito}`, fmt(parseFloat(r.custo_total)||0),
+      '<span class="badge badge-red">Defeito</span>', 'Defeito');
+  });
+
+  // KPIs desperdício
+  if (Object.keys(totais.ocorrPorSetor).length > 0) {
+    const sc = Object.entries(totais.ocorrPorSetor).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('kpi-setor-critico').textContent = sc[0];
+    document.getElementById('kpi-ocorr').textContent = Object.values(totais.ocorrPorSetor).reduce((a,b)=>a+b,0);
+  }
+  document.getElementById('kpi-pares').textContent      = totais.pares;
+  document.getElementById('kpi-custo-desp').textContent = fmt(totais.custoDesp).replace('R$ ','R$');
+
+  atualizarKPIs();
+  _atualizarKPIsHistorico();
+  applyFilters(true);
+  mostrarLoader(false);
+}
+
+function _addHist(tbody, data, turno, setor, colab, desc, custo, badge, status) {
+  const tr = document.createElement('tr');
+  tr.dataset.date = data; tr.dataset.turno = turno; tr.dataset.setor = setor;
+  tr.innerHTML = `
+    <td class="mono">${fmtDataLabel(data, turno)}</td>
+    <td>${badge}</td><td class="bold">${setor}</td><td>${colab}</td>
+    <td>${desc}</td><td class="mono">${custo}</td>
+    <td><span class="badge ${status==='OK'?'badge-green':status==='Atenção'?'badge-yellow':'badge-blue'}">${status}</span></td>`;
+  tbody.appendChild(tr);
+}
+
+function _atualizarKPIsHistorico() {
+  document.getElementById('kpi-hist-total').textContent = document.getElementById('tbody-historico').children.length;
+  document.getElementById('kpi-hist-prod').textContent  = totais.prod;
+  document.getElementById('kpi-hist-mp').textContent    = fmt(totais.custoMP).replace('R$ ','R$');
+  document.getElementById('kpi-hist-desp').textContent  = fmt(totais.custoDesp).replace('R$ ','R$');
+}
+
+// ============================================================
+// REGISTROS COM PERSISTÊNCIA
+// ============================================================
+async function registrarProducao() {
+  const data       = document.getElementById('prod-data').value;
+  const turno      = document.getElementById('prod-turno').value;
+  const setor      = document.getElementById('prod-setor').value;
+  const colab      = document.getElementById('prod-colab').value;
+  const tipo       = document.getElementById('prod-tipo-peca').value;
+  const linha      = document.getElementById('prod-linha').value;
+  const qtd        = parseInt(document.getElementById('prod-qtd').value) || 0;
+  const def        = parseInt(document.getElementById('prod-defeito').value) || 0;
+  const precoSubli = parseFloat(document.getElementById('prod-papel').value) || 1.60;
+
+  if (!colab) { showToast('Selecione o colaborador.'); return; }
+  if (!qtd)   { showToast('Informe a quantidade produzida.'); return; }
+
+  const linhaNome = document.getElementById('prod-linha').options[document.getElementById('prod-linha').selectedIndex].text;
+  const taxa   = qtd > 0 ? def/qtd : 0;
+  const status = taxa === 0 ? 'OK' : taxa < 0.05 ? 'Atenção' : 'Crítico';
+  const statusBadge = status === 'OK' ? '<span class="badge badge-green">OK</span>'
+    : status === 'Atenção' ? '<span class="badge badge-yellow">Atenção</span>'
+    : '<span class="badge badge-red">Crítico</span>';
+
+  mostrarLoader(true);
+
+  // Salva produção
+  const okProd = await sbInsert('producao', {
+    data, turno, setor, colaborador: colab,
+    tipo_peca: tipo, linha, linha_nome: linhaNome,
+    qtd, defeitos: def, status
+  });
+  if (!okProd) { mostrarLoader(false); showToast('Erro ao salvar produção.'); return; }
+
+  // AUTO-MP: Impressão → tinta + papel sublimático
+  if (setor === 'Impressão') {
+    const c         = getCustoMPPorPeca(linha, tipo, precoSubli);
+    const custoSubli = c.papel * qtd;
+    const custoTinta = c.tinta * qtd;
+    const total      = custoSubli + custoTinta;
+    await sbInsert('materia_prima', {
+      data, turno, tipo_peca: tipo, linha, linha_nome: linhaNome,
+      os: `AUTO-IMP · ${turno}`, qtd, kg_manual: 0, preco_subli: precoSubli,
+      custo_tecido: 0, custo_subli: custoSubli, custo_tinta: custoTinta,
+      custo_calandra: 0, custo_total: total,
+      custo_por_peca: qtd > 0 ? total/qtd : 0
+    });
+    totais.custoMP += total;
+  }
+
+  // AUTO-MP: Prensa → tecido + papel calandra
+  if (setor === 'Prensa') {
+    const c          = getCustoMPPorPeca(linha, tipo, precoSubli);
+    const custoTecido = c.tecido * qtd;
+    const custoCal    = c.calandra * qtd;
+    const total       = custoTecido + custoCal;
+    await sbInsert('materia_prima', {
+      data, turno, tipo_peca: tipo, linha, linha_nome: linhaNome,
+      os: `AUTO-PRENSA · ${turno}`, qtd, kg_manual: 0, preco_subli: precoSubli,
+      custo_tecido: custoTecido, custo_subli: 0, custo_tinta: 0,
+      custo_calandra: custoCal, custo_total: total,
+      custo_por_peca: qtd > 0 ? total/qtd : 0
+    });
+    totais.custoMP += total;
+  }
+
+  mostrarLoader(false);
+
+  // Atualiza KPIs locais
+  totais.prod += qtd;
+  totais.defeitosHoje += def;
+  if (!totais.porSetor) totais.porSetor = { Impressão:0, Corte:0, Prensa:0, Costura:0, Arremate:0 };
+  totais.porSetor[setor] = (totais.porSetor[setor] || 0) + qtd;
+  atualizarKPIs();
+
+  // Linha na tabela com botão excluir
+  const tbody = document.getElementById('tbody-producao');
+  const tr    = document.createElement('tr');
+  tr.dataset.date = data; tr.dataset.turno = turno; tr.dataset.setor = setor;
+  tr.innerHTML = `
+    <td class="mono">${fmtDataLabel(data, turno)}</td>
+    <td class="bold">${setor}</td><td>${colab}</td><td>${linhaNome}</td>
+    <td>${tipo === 'camisa' ? 'Camisa' : tipo === 'short' ? 'Short' : 'Regata'}</td>
+    <td class="mono bold">${qtd}</td><td class="mono">${def}</td><td>${statusBadge}</td>
+    <td><button class="btn-del" onclick="excluirRegistro(this,'producao')" title="Excluir">✕</button></td>`;
+  tbody.insertBefore(tr, tbody.firstChild);
+
+  // Se houve auto-MP, recarrega a aba de MP silenciosamente
+  if (setor === 'Impressão' || setor === 'Prensa') {
+    recarregarMP();
+    showToast('✓ Produção + MP calculado e salvo automaticamente!');
+  } else {
+    showToast('✓ Produção salva com sucesso!');
+  }
+  _atualizarKPIsHistorico();
+  limparProd();
+}
+
+async function registrarMP() {
+  const data       = document.getElementById('mp-data').value;
+  const turno      = document.getElementById('mp-turno').value;
+  const tipo       = document.getElementById('mp-tipo-peca').value;
+  const linha      = document.getElementById('mp-linha').value;
+  const qtd        = parseInt(document.getElementById('mp-qtd').value) || 0;
+  const precoSubli = parseFloat(document.getElementById('mp-papel').value) || 1.60;
+  const kgManual   = parseFloat(document.getElementById('mp-kg').value) || 0;
+  const os         = document.getElementById('mp-os').value || '';
+
+  if (!qtd) { showToast('Informe a quantidade de peças.'); return; }
+
+  const c = getCustoMPPorPeca(linha, tipo, precoSubli);
+  const t = getTecido(linha, tipo);
+  const custoTecido = kgManual > 0 ? kgManual * t.preco : c.tecido * qtd;
+  const custoSubli  = c.papel    * qtd;
+  const custoTinta  = c.tinta    * qtd;
+  const custoCal    = c.calandra * qtd;
+  const total       = custoTecido + custoSubli + custoTinta + custoCal;
+  const linhaNome   = document.getElementById('mp-linha').options[document.getElementById('mp-linha').selectedIndex].text;
+
+  mostrarLoader(true);
+  const ok = await sbInsert('materia_prima', {
+    data, turno, tipo_peca: tipo, linha, linha_nome: linhaNome,
+    os, qtd, kg_manual: kgManual, preco_subli: precoSubli,
+    custo_tecido: custoTecido, custo_subli: custoSubli,
+    custo_tinta: custoTinta, custo_calandra: custoCal,
+    custo_total: total, custo_por_peca: qtd > 0 ? total/qtd : 0
+  });
+  mostrarLoader(false);
+  if (!ok) { showToast('Erro ao salvar. Verifique a conexão.'); return; }
+
+  totais.custoMP += total;
+  atualizarKPIs();
+
+  const tbody = document.getElementById('tbody-materia');
+  const tr = document.createElement('tr');
+  tr.dataset.date = data; tr.dataset.turno = turno;
+  tr.innerHTML = `
+    <td class="mono">${fmtDataLabel(data, turno)}</td>
+    <td>${linhaNome} / ${tipo === 'camisa' ? 'Camisa' : tipo === 'short' ? 'Short' : 'Regata'}</td>
+    <td class="mono">${os||'—'}</td><td class="mono">${qtd}</td>
+    <td class="mono">${fmt(custoTecido)}</td>
+    <td class="mono">${fmt(custoSubli+custoTinta)}</td>
+    <td class="mono">${fmt(custoCal)}</td>
+    <td class="mono bold" style="color:var(--accent2)">${fmt(total)}</td>
+    <td class="mono">${fmt(qtd>0?total/qtd:0)}</td>
+    <td><button class="btn-del" onclick="excluirRegistro(this,'materia_prima')" title="Excluir">✕</button></td>`;
+  tbody.insertBefore(tr, tbody.firstChild);
+  _atualizarKPIsHistorico();
+  limparMP();
+  showToast('✓ Consumo de MP salvo com sucesso!');
+}
+
+async function registrarDesp() {
+  const data       = document.getElementById('desp-data').value;
+  const turno      = document.getElementById('desp-turno').value;
+  const setor      = document.getElementById('desp-setor').value;
+  const colab      = document.getElementById('desp-colab').value;
+  const tipo       = document.getElementById('desp-tipo-peca').value;
+  const componente = document.getElementById('desp-componente').value;
+  const linha      = document.getElementById('desp-linha').value;
+  const qtd        = parseInt(document.getElementById('desp-qtd').value) || 0;
+  const precoSubli = parseFloat(document.getElementById('desp-papel').value) || 1.60;
+  const defeito    = document.getElementById('desp-tipo-defeito').value;
+  const destino    = document.getElementById('desp-destino').value;
+
+  if (!colab) { showToast('Selecione o colaborador.'); return; }
+  if (!qtd)   { showToast('Informe a quantidade afetada.'); return; }
+
+  const d        = getCustoDesperdicio(setor, linha, tipo, precoSubli);
+  const pct      = getPercentualComponente(tipo, componente);
+  const nomeComp = getNomeComponente(tipo, componente);
+  const custoComp = d.valor * pct;
+  const total    = custoComp * qtd;
+  const linhaNome = document.getElementById('desp-linha').options[document.getElementById('desp-linha').selectedIndex].text;
+  const compDesc = `${d.desc} · ${nomeComp} (${(pct*100).toFixed(0)}%)`;
+
+  mostrarLoader(true);
+  const ok = await sbInsert('desperdicio', {
+    data, turno, setor, colaborador: colab,
+    tipo_peca: tipo, componente, componente_nome: nomeComp,
+    linha, linha_nome: linhaNome, tipo_defeito: defeito,
+    qtd, preco_subli: precoSubli,
+    componentes_perdidos: compDesc,
+    custo_total: total, custo_por_peca: custoComp,
+    destino
+  });
+  mostrarLoader(false);
+  if (!ok) { showToast('Erro ao salvar. Verifique a conexão.'); return; }
+
+  totais.custoDesp += total;
+  totais.pares     += qtd;
+  totais.ocorrPorSetor[setor] = (totais.ocorrPorSetor[setor]||0) + qtd;
+  const sc = Object.entries(totais.ocorrPorSetor).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('kpi-setor-critico').textContent = sc[0];
+  document.getElementById('kpi-ocorr').textContent = Object.values(totais.ocorrPorSetor).reduce((a,b)=>a+b,0);
+  document.getElementById('kpi-pares').textContent = totais.pares;
+  document.getElementById('kpi-custo-desp').textContent = fmt(totais.custoDesp).replace('R$ ','R$');
+
+  const destinoBadge = destino === 'Retrabalho / Reposição'
+    ? '<span class="badge badge-yellow">Retrabalho</span>'
+    : destino === 'Descarte Total'
+      ? '<span class="badge badge-red">Descarte</span>'
+      : '<span class="badge badge-gray">2ª Linha</span>';
+
+  const tbody = document.getElementById('tbody-desperdicio');
+  const tr = document.createElement('tr');
+  tr.dataset.date = data; tr.dataset.turno = turno; tr.dataset.setor = setor;
+  tr.innerHTML = `
+    <td class="mono">${fmtDataLabel(data, turno)}</td>
+    <td class="bold">${setor}</td><td>${colab}</td>
+    <td>${linhaNome} / ${tipo==='camisa'?'Camisa':tipo==='short'?'Short':'Regata'} · ${nomeComp}</td>
+    <td style="font-size:12px">${defeito}</td>
+    <td class="mono">${qtd}</td>
+    <td style="font-size:11px;color:var(--muted)">${compDesc}</td>
+    <td class="mono bold" style="color:var(--red)">${fmt(total)}</td>
+    <td>${destinoBadge}</td>
+    <td><button class="btn-del" onclick="excluirRegistro(this,'desperdicio')" title="Excluir">✕</button></td>`;
+  tbody.insertBefore(tr, tbody.firstChild);
+  _atualizarKPIsHistorico();
+  limparDesp();
+  showToast('✓ Ocorrência salva com sucesso!');
+}
+
+// adicionarHistorico migrado para _addHist + carregarDados
+
+function atualizarKPIs() {
+  const setores = { Impressão:'impressao', Corte:'corte', Prensa:'prensa', Costura:'costura', Arremate:'arremate' };
+  Object.entries(setores).forEach(([s, id]) => {
+    const el = document.getElementById('kpi-setor-' + id);
+    if (el) el.textContent = totais.porSetor?.[s] || 0;
+  });
+  document.getElementById('kpi-custo-mp').textContent = fmt(totais.custoMP).replace('R$ ','R$');
+}
+
+// ============================================================
+// LIMPEZA DE FORMULÁRIOS
+// ============================================================
+function limparProd() {
+  document.getElementById('prod-data').value = todayISO;
+  document.getElementById('prod-turno').selectedIndex = 0;
+  document.getElementById('prod-setor').selectedIndex = 0;
+  document.getElementById('prod-colab').selectedIndex = 0;
+  document.getElementById('prod-tipo-peca').value = 'camisa';
+  preencherLinhas('prod-linha','camisa');
+  document.getElementById('prod-qtd').value = '';
+  document.getElementById('prod-defeito').value = '';
+  document.getElementById('prod-papel').selectedIndex = 0;
+}
+function limparMP() {
+  document.getElementById('mp-data').value = todayISO;
+  document.getElementById('mp-turno').selectedIndex = 0;
+  document.getElementById('mp-tipo-peca').value = 'camisa';
+  preencherLinhas('mp-linha','camisa');
+  document.getElementById('mp-qtd').value = '';
+  document.getElementById('mp-kg').value = '';
+  document.getElementById('mp-os').value = '';
+  document.getElementById('mp-papel').selectedIndex = 0;
+  calcularCustoMP();
+}
+function limparDesp() {
+  document.getElementById('desp-data').value = todayISO;
+  document.getElementById('desp-turno').selectedIndex = 0;
+  document.getElementById('desp-setor').selectedIndex = 0;
+  document.getElementById('desp-colab').selectedIndex = 0;
+  document.getElementById('desp-tipo-peca').value = 'camisa';
+  atualizarComponentesDesp();
+  preencherLinhas('desp-linha','camisa');
+  document.getElementById('desp-qtd').value = '';
+  document.getElementById('desp-papel').selectedIndex = 0;
+  calcularCustoDesp();
+}
+
+// ============================================================
+// FILTROS
+// ============================================================
+function applyFilters(silent) {
+  const dateFrom = document.getElementById('filter-date-from').value;
+  const dateTo   = document.getElementById('filter-date-to').value;
+  const turno    = document.getElementById('filter-turno').value;
+  const setor    = document.getElementById('filter-setor').value;
+  const hasFilter = dateFrom || dateTo || turno || setor;
+
+  document.getElementById('filterActiveBadge').classList.toggle('visible', !!hasFilter);
+
+  let total = 0, visible = 0;
+  document.querySelectorAll('tbody tr[data-date]').forEach(row => {
+    total++;
+    let show = true;
+    if (dateFrom && row.dataset.date < dateFrom) show = false;
+    if (dateTo   && row.dataset.date > dateTo)   show = false;
+    if (turno    && row.dataset.turno !== turno)  show = false;
+    if (setor    && row.dataset.setor !== setor)  show = false;
+    row.classList.toggle('filtered-out', !show);
+    if (show) visible++;
+  });
+
+  const info = document.getElementById('filterResultInfo');
+  info.textContent = hasFilter && total > 0 ? `${visible} de ${total} registros` : '';
+
+  if (hasFilter && !silent) {
+    let parts = [];
+    if (dateFrom && dateTo) parts.push(`${fmtDateBR(dateFrom)} → ${fmtDateBR(dateTo)}`);
+    else if (dateFrom) parts.push(`a partir de ${fmtDateBR(dateFrom)}`);
+    else if (dateTo)   parts.push(`até ${fmtDateBR(dateTo)}`);
+    if (turno) parts.push(document.getElementById('filter-turno').options[document.getElementById('filter-turno').selectedIndex].text);
+    if (setor) parts.push(setor);
+    showToast(`Filtro: ${parts.join(' · ')}`);
+  }
+}
+
+function clearFilters() {
+  document.getElementById('filter-date-from').value = '';
+  document.getElementById('filter-date-to').value   = '';
+  document.getElementById('filter-turno').value     = '';
+  document.getElementById('filter-setor').value     = '';
+  document.querySelectorAll('tbody tr[data-date]').forEach(r => r.classList.remove('filtered-out'));
+  document.getElementById('filterActiveBadge').classList.remove('visible');
+  document.getElementById('filterResultInfo').textContent = '';
+  showToast('Filtros limpos');
+}
+
+// ============================================================
+// NAVEGAÇÃO
+// ============================================================
+function showSection(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  el.classList.add('active');
+  applyFilters(true);
+}
+
+// ============================================================
+// UTILITÁRIOS
+// ============================================================
+const todayISO = new Date().toISOString().split('T')[0];
+
+function fmtDataLabel(iso, turno) {
+  if (!iso) return '—';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m} · ${turno}`;
+}
+function fmtDateBR(iso) {
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = '✓ ' + msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+// ─────────────────────────────────────────────
+// EXCLUIR REGISTRO
+// ─────────────────────────────────────────────
+async function excluirRegistro(btn, tabela) {
+  if (!confirm('Confirma a exclusão deste registro?')) return;
+  const tr = btn.closest('tr');
+  tr.classList.add('deleting');
+
+  // Para excluir pelo Supabase precisamos do ID — vamos buscar pelo conteúdo da linha
+  // Estratégia: guardar o id no dataset da tr ao carregar/inserir
+  const id = tr.dataset.sbid;
+  if (id) {
+    mostrarLoader(true);
+    try {
+      const res = await fetch(`${SB_URL}/rest/v1/${tabela}?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+      });
+      mostrarLoader(false);
+      if (res.ok) {
+        tr.remove();
+        showToast('✓ Registro excluído.');
+        await carregarDados(); // recarrega tudo para atualizar KPIs
+      } else {
+        tr.classList.remove('deleting');
+        showToast('Erro ao excluir. Tente novamente.');
+      }
+    } catch(e) {
+      mostrarLoader(false);
+      tr.classList.remove('deleting');
+      showToast('Erro de conexão.');
+    }
+  } else {
+    // Registro local (não salvo ainda no SB com id) — apenas remove da tela
+    tr.remove();
+    showToast('✓ Registro removido.');
+  }
+}
+
+// Recarrega só a tabela de MP após auto-insert
+async function recarregarMP() {
+  const mps = await sbSelect('materia_prima');
+  const tbody = document.getElementById('tbody-materia');
+  tbody.innerHTML = '';
+  let custoTotal = 0;
+  mps.forEach(r => {
+    custoTotal += parseFloat(r.custo_total)||0;
+    const tr = document.createElement('tr');
+    tr.dataset.date = r.data; tr.dataset.turno = r.turno; tr.dataset.sbid = r.id;
+    tr.innerHTML = `
+      <td class="mono">${fmtDataLabel(r.data, r.turno)}</td>
+      <td>${r.linha_nome} / ${r.tipo_peca === 'camisa' ? 'Camisa' : r.tipo_peca === 'short' ? 'Short' : 'Regata'}</td>
+      <td class="mono">${r.os||'—'}</td><td class="mono">${r.qtd}</td>
+      <td class="mono">${fmt(parseFloat(r.custo_tecido)||0)}</td>
+      <td class="mono">${fmt((parseFloat(r.custo_subli)||0)+(parseFloat(r.custo_tinta)||0))}</td>
+      <td class="mono">${fmt(parseFloat(r.custo_calandra)||0)}</td>
+      <td class="mono bold" style="color:var(--accent2)">${fmt(parseFloat(r.custo_total)||0)}</td>
+      <td class="mono">${fmt(parseFloat(r.custo_por_peca)||0)}</td>
+      <td><button class="btn-del" onclick="excluirRegistro(this,'materia_prima')" title="Excluir">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+  totais.custoMP = custoTotal;
+  document.getElementById('kpi-custo-mp').textContent = fmt(totais.custoMP).replace('R$ ','R$');
+  // KPIs MP section
+  document.getElementById('kpi-custo-mp').textContent = fmt(totais.custoMP).replace('R$ ','R$');
+}
+
+function init() {
+  const now = new Date();
+  const days = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  document.getElementById('dateBadge').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const h = now.getHours();
+  document.getElementById('turnoBadge').textContent = `TURNO ${h < 13 ? '1 – MANHÃ' : h < 18 ? '2 – TARDE' : '3 – NOITE'}`;
+  document.querySelectorAll('input[type="date"]:not([id^="filter"])').forEach(el => el.value = todayISO);
+  atualizarComponentesDesp();
+  calcularCustoMP();
+  calcularCustoDesp();
+  // Carrega dados do Supabase
+  carregarDados();
+}
+
+init();
+</script>
+</body>
+</html>
